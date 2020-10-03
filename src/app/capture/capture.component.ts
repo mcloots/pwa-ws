@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ConnectionService } from '../connection.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-capture',
@@ -22,16 +25,26 @@ export class CaptureComponent implements OnInit, OnDestroy {
   captureCollectionRef: AngularFirestoreCollection<any>;
   width: number;
   height: number;
-  actions: boolean;
+
+  online: boolean = true;
+  actions: boolean = false;
+  subscription: Subscription;
+  
   constructor(
     private http: HttpClient,
     private db: AngularFirestore,
-    private router: Router) {
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private connection: ConnectionService) {
     this.displayStream = true;
     this.captureCollectionRef = this.db.collection<any>('captures');
   }
 
   ngOnInit(): void {
+    this.connection.start();
+    this.subscription = this.connection.behaviorSubjectObservable$.subscribe(online => {
+      this.online = online;
+    });
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia(this.constraints).then(stream => {
         this.video.nativeElement.srcObject = stream;
@@ -55,19 +68,24 @@ export class CaptureComponent implements OnInit, OnDestroy {
   public usePhoto() {
     const capture = this.canvas.nativeElement.toDataURL('image/jpeg');
     const timeTaken = new Date().getTime();
-    this.http.post(`https://api.cloudinary.com/v1_1/${environment.cloudName}/image/upload`, {
-      file: capture,
-      upload_preset: environment.uploadPreset
-    }).subscribe((response: any) => {
-      if (response) {
-        this.captureCollectionRef.add({
-          public_id: response.public_id,
-          uploaded: timeTaken
-        }).then(() => {
-          this.router.navigateByUrl('/');
-        });
-      }
-    });
+    if (!navigator.onLine) {
+      localStorage.setItem(`capture@${timeTaken}`, capture);
+      this.snackBar.open(`Since you're offline, your photo will be uploaded the next time you go online.`, 'Got it!');
+    } else {
+      this.http.post(`https://api.cloudinary.com/v1_1/${environment.cloudName}/image/upload`, {
+        file: capture,
+        upload_preset: environment.uploadPreset
+      }).subscribe((response: any) => {
+        if (response) {
+          this.captureCollectionRef.add({
+            public_id: response.public_id,
+            uploaded: timeTaken
+          }).then(() => {
+            this.router.navigateByUrl('/');
+          });
+        }
+      });
+    }
   }
 
   public retakePhoto() {
@@ -88,6 +106,7 @@ export class CaptureComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.subscription.unsubscribe();
     this.actions = false;
     if (this.video) {
       this.video.nativeElement.srcObject.getVideoTracks().forEach(track => track.stop());

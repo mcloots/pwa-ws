@@ -18,6 +18,7 @@ import { environment } from 'src/environments/environment';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { HttpClientModule } from '@angular/common/http';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 export const cloudinaryLib = {
   Cloudinary: Cloudinary
@@ -42,10 +43,12 @@ const MatModules = [
     MatModules,
     CloudinaryModule.forRoot(cloudinaryLib, { cloud_name: environment.cloudName, secure: true }),
     AngularFireModule.initializeApp(environment.firebase),
-    AngularFirestoreModule,
-    HttpClientModule
+    AngularFirestoreModule.enablePersistence(),
+    HttpClientModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

@@ -9,6 +9,9 @@ export const environment = {
     projectId: "pwa-workshop-86b4c",
     storageBucket: "pwa-workshop-86b4c.appspot.com",
     messagingSenderId: "32091744200",
-    appId: "1:32091744200:web:6af27c6bbef6fc620602fd"
+    appId: "1:32091744200:web:6af27c6bbef6fc620602fd",
+    firestore: {
+      cacheSizeBytes: 99999999999
+    }
   }
 };
