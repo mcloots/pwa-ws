@@ -11,6 +11,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { CloudinaryModule } from '@cloudinary/angular-5.x';
+import { Cloudinary } from 'cloudinary-core';
+import { environment } from 'src/environments/environment';
+
+import { AngularFireModule } from '@angular/fire';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { HttpClientModule } from '@angular/common/http';
+
+export const cloudinaryLib = {
+  Cloudinary: Cloudinary
+};
+
 const MatModules = [
   MatButtonModule,
   MatCardModule,
@@ -27,7 +39,11 @@ const MatModules = [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatModules
+    MatModules,
+    CloudinaryModule.forRoot(cloudinaryLib, { cloud_name: environment.cloudName, secure: true }),
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
