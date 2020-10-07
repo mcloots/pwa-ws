@@ -8,5 +8,13 @@
     </a></p>
     <h2>Geolocation</h2>
     <button mat-raised-button color="warning" (click)="getGeolocation()">Get my location!</button>
+
     <h2>Device Orientation and Device Motion</h2>
     <button mat-raised-button color="warning" (click)="showOrientation()">Show my orientation!</button>
+
+    <h2>Vibrations</h2>
+    <button mat-raised-button color="warning" (click)="vibrate()">Give me a vibration!</button>
+
+    <h2>Battery manager</h2>
+    <button mat-raised-button color="warning" (click)="getBattery()">How is my battery going?</button>
+    <ul><li *ngFor="let b of batterymanager">{{b*100}}%</li></ul>
